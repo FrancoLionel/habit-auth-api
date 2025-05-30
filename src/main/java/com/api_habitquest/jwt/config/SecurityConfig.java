@@ -1,7 +1,5 @@
-package com.programandoenjava.jwt.config;
+package com.api_habitquest.jwt.config;
 
-import com.programandoenjava.jwt.auth.repository.Token;
-import com.programandoenjava.jwt.auth.repository.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +16,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.api_habitquest.jwt.token.Token;
+import com.api_habitquest.jwt.token.TokenRepository;
+
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -33,16 +34,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
         http
+                // Deshabilita CSRF para APIs REST (sin sesión)
                 .csrf(AbstractHttpConfigurer::disable)
+                // Configura permisos: /auth/** abierto, resto requiere autenticación
                 .authorizeHttpRequests(req ->
                         req.requestMatchers("/auth/**")
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated()
                 )
+                // Configura la sesión como stateless (sin estado)
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+                // Proveedor de autenticación personalizado (DAO + bcrypt)
                 .authenticationProvider(authenticationProvider)
+                // Filtro JWT antes del filtro estándar de autenticación por usuario y contraseña
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                // Configura logout personalizado para invalidar token y limpiar contexto
                 .logout(logout ->
                         logout.logoutUrl("/auth/logout")
                                 .addLogoutHandler(this::logout)
@@ -53,11 +60,14 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Invalida el token JWT en logout marcándolo como expirado y revocado
+     * y limpia el contexto de seguridad.
+     */
     private void logout(
             final HttpServletRequest request, final HttpServletResponse response,
             final Authentication authentication
     ) {
-
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return;

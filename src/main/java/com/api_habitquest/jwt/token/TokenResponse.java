@@ -1,4 +1,4 @@
-package com.programandoenjava.jwt.auth.controller;
+package com.api_habitquest.jwt.token;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

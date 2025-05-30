@@ -1,4 +1,4 @@
-package com.programandoenjava.jwt;
+package com.api_habitquest.jwt;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

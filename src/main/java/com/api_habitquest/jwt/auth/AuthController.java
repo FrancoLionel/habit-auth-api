@@ -1,10 +1,13 @@
-package com.programandoenjava.jwt.auth.controller;
+package com.api_habitquest.jwt.auth;
 
-import com.programandoenjava.jwt.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.api_habitquest.jwt.token.TokenResponse;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/auth")
@@ -14,13 +17,13 @@ public class AuthController {
     private final AuthService service;
 
     @PostMapping("/register")
-    public ResponseEntity<TokenResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<TokenResponse> register(@Valid @RequestBody RegisterRequest request) {
         final TokenResponse response = service.register(request);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> authenticate(@RequestBody AuthRequest request) {
+    public ResponseEntity<TokenResponse> authenticate(@Valid @RequestBody AuthRequest request) {
         final TokenResponse response = service.authenticate(request);
         return ResponseEntity.ok(response);
     }
@@ -31,6 +34,5 @@ public class AuthController {
     ) {
         return service.refreshToken(authentication);
     }
-
 
 }
